@@ -62,6 +62,7 @@ public sealed class ReportJob(
             case ExportFormat.Pdf:  report.ExportToPdf(path);  break;
             case ExportFormat.Xlsx: report.ExportToXlsx(path); break;
             case ExportFormat.Csv:  report.ExportToCsv(path);  break;
+            default: throw new NotSupportedException($"Unsupported export format {schedule.Format}");
         }
         return Path.GetFullPath(path);
     }

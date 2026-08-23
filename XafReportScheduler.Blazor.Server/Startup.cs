@@ -104,6 +104,7 @@ public class Startup {
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env) {
+        Services.ReportScheduleJobs.Logger = app.ApplicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("ReportScheduleJobs");
         if(env.IsDevelopment()) {
             app.UseDeveloperExceptionPage();
         }

@@ -25,5 +25,6 @@ public sealed class ReportScheduleSyncService(IServiceProvider sp, ILogger<Repor
             }
             catch (Exception ex) { log.LogWarning(ex, "Report schedule sync attempt {N} failed", attempt); }
         }
+        log.LogError("Report schedule sync gave up after {Attempts} attempts — no recurring jobs registered", 6);
     }
 }
