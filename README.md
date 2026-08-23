@@ -96,10 +96,19 @@ Job execution reads `ReportJobs` from `appsettings.json`:
 }
 ```
 
-`OutputFolder` is relative to the Blazor.Server content root and git-ignored. A schedule
-can override it per-row via its own `OutputFolder` field.
+`OutputFolder` is resolved against the Blazor.Server content root when relative (and used
+as-is when rooted); the default `output` folder is git-ignored. A schedule can override
+it per-row via its own `OutputFolder` field.
 
 ## E2E
+
+Once, after the first build, install the Playwright browser:
+
+```bash
+pwsh XafReportScheduler.E2ETests/bin/Debug/net8.0/playwright.ps1 install chromium
+```
+
+Then:
 
 ```bash
 dotnet run --project XafReportScheduler.E2ETests
@@ -107,7 +116,10 @@ dotnet run --project XafReportScheduler.E2ETests
 
 A self-contained console app (C# `Microsoft.Playwright`, headless Chromium): pre-cleans
 seed data, builds and starts the app on port `5100` (separate from the dev port), then
-asserts, against the real running app:
+asserts, against the real running app. It uses the same dev LocalDB catalog as `dotnet run
+--project XafReportScheduler.Blazor.Server` — it deletes and re-seeds `Orders`/`Customers`
+and asserts exactly one enabled recurring schedule is registered, so don't run it against
+a database you care about the contents of. Assertions:
 - the seeded report is non-predefined (SQL),
 - the report designer surface renders for it,
 - **Run Now** on the seeded CSV schedule produces a CSV containing only the order that
@@ -116,7 +128,11 @@ asserts, against the real running app:
 - the enabled recurring job was registered at startup (`Registered 1 report schedules`
   in app stdout).
 
-Screenshots land in `docs/screenshots/`. Exit code `0` on full pass.
+Screenshots from a passing run land in `XafReportScheduler.E2ETests/bin/Debug/net8.0/screenshots/`
+(git-ignored, printed at the start of the run) — separate from the committed evidence
+screenshots checked into `docs/screenshots/`, which each E2E run no longer overwrites. Exit
+code `0` on full pass, `1` on a failed assertion, `2` if the Playwright browser isn't installed
+(see the install step above).
 
 ## Limitations
 
@@ -129,6 +145,16 @@ Screenshots land in `docs/screenshots/`. Exit code `0` on full pass.
   `CurrentUserId()`) are not supported — there's no dialog to resolve them against in an
   unattended job.
 - **SQL Server LocalDB only** — no other database provider is wired up.
+- **Credentials.** DEBUG builds seed `Admin`/`User` with empty passwords. The job's
+  service user (`ReportJobs:UserName`/`Password` in `appsettings.json`) is plaintext
+  config, and the job runs with that user's full permissions. Fine for a POC; beyond
+  that, use `dotnet user-secrets` or encrypted settings instead.
+- **Retries.** Hangfire automatic retry is disabled (`Attempts = 0`). A failed run shows
+  up on the schedule row (`LastRunStatus`/`LastRunMessage`); re-run it via **Run Now**.
+- **Startup sync window.** `ReportScheduleSyncService` retries for ~30 s after host start
+  before giving up on registering recurring jobs. In DEBUG, the database schema update
+  runs on the first browser request — on a cold/fresh database, open the app within that
+  window (or restart it) so the sync attempt lands after the schema exists.
 
 ## Licence
 

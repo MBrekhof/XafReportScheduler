@@ -18,6 +18,8 @@ Built across 6 tasks, one commit per task (local only, nothing pushed):
 | `a267596` | `ReportJob` (export via `IReportExportService`), Hangfire recurring-job sync at startup, "Run Now" controller action |
 | `d155742` | Fix round: unregister Hangfire job on schedule delete, log sync-retry exhaustion, guard unhandled `ExportFormat` |
 | `2f083ec` | C# Playwright E2E phase gate (`XafReportScheduler.E2ETests`) |
+| `ec07a4a` | Final-review fix wave (code): cron validation on save, per-row sync isolation, logon inside try, no Hangfire retries, E2E fresh-clone robustness, `Nullable` on Module |
+| *(this commit)* | Final-review fix wave (docs): this file + `README.md` |
 
 ## What was verified
 
@@ -52,17 +54,22 @@ popup renders `Order Date` / `Customer.Name` as resolved tokens against the seed
 `Order` type.
 
 Full detail of each task's verification is in
-`.superpowers/sdd/2026-08-23-xaf-report-scheduler/task-{1..5}-report.md`.
+`.superpowers/sdd/2026-08-23-xaf-report-scheduler/task-{1..5}-report.md` on the authoring
+machine (git-ignored). A final-review fix wave's report is at
+`.superpowers/sdd/2026-08-23-xaf-report-scheduler/final-fix-report.md`, same basis.
 
 ## Open points
 
 1. **Push / GitHub repo creation is pending owner go.** Nothing has been pushed; the
    repo is local-only (`git init`, no remote configured). Per the plan's Global
    Constraints, this stays that way until the owner explicitly says go.
-2. **DevExpress ticket outcome pending** — a support ticket about the "XafReportScheduler"
+2. **Before any public push: regenerate `UrlSigningKey` in `appsettings.json`.** It's
+   still the scaffold's debug key (`XafReportScheduler.Blazor.Server/appsettings.json`),
+   fine for a local POC but not something to publish as-is.
+3. **DevExpress ticket outcome pending** — a support ticket about the "XafReportScheduler"
    name and publishing terms is open with DevExpress; the owner has a draft in their
    own scratchpad. Repo visibility/naming may need to change depending on the answer.
-3. **Possible next steps** (none started, no work done toward these):
+4. **Possible next steps** (none started, no work done toward these):
    - SMTP delivery sink alongside the folder sink.
    - A run-history entity (currently only the last run's status/message/path are kept
      on `ReportSchedule` itself).
@@ -79,14 +86,15 @@ Full detail of each task's verification is in
 
 ## Known nits (deferred, non-blocking)
 
-- `XafReportScheduler.Module.csproj` (and `Blazor.Server.csproj`) lack
-  `<Nullable>enable</Nullable>`, so nullable reference types (`string?`, `Customer?`,
-  etc.) compile with CS8632 warnings instead of a clean nullable context. Cosmetic;
-  0 build errors either way.
-- `ReportSchedule.cs` has an unused `using DevExpress.ExpressApp.DC;`.
-- `ReportJob.Logon()` mixes a soft `is` check (`security is SecurityStrategy concrete`)
-  with a hard cast (`(SecurityStrategyBase)security`) a few lines later — inconsistent
-  style, not a correctness issue given the DI registration verified in Task 4.
+Fixed in the final-review fix wave (commit `ec07a4a`): `Module.csproj` now has
+`<Nullable>enable</Nullable>` (builds with 0 warnings; `Blazor.Server.csproj` deliberately
+left as-is); `ReportJob.Logon()`'s mixed soft-check/hard-cast style is gone; and the
+previous "unused `using DevExpress.ExpressApp.DC;`" note (below, in earlier revisions of
+this file) was wrong — it's what `FieldSizeAttribute` resolves through, so it's back and
+genuinely used.
+
+Still open:
+
 - `ReportScheduleController`'s deleted-ids `HashSet<Guid>` isn't cleared if a commit is
   cancelled/rolled back — self-heals on the next successful save, not a leak.
 - `ReportScheduleController`'s `ObjectSpace.Committed` handler only re-registers
@@ -95,6 +103,11 @@ Full detail of each task's verification is in
 - The E2E's `PollForCsv` matches `{ScheduleName}_*.csv` by glob, not newest-by-mtime —
   fine with today's single CSV-exporting schedule, would need tightening if more CSV
   schedules are added.
+- `ReportScheduleSyncService` gives up ~30 s after host start if it can't register
+  recurring jobs by then (6 attempts, 5 s apart) — see README "Startup sync window".
+- The E2E suite runs against the same dev LocalDB catalog as `dotnet run --project
+  XafReportScheduler.Blazor.Server` (it deletes/re-seeds `Orders`/`Customers`) — don't run
+  it against a database whose contents you care about; see README "E2E".
 
 ## Environment note
 
