@@ -60,6 +60,21 @@ public class Updater : ModuleUpdater {
 
         ObjectSpace.CommitChanges(); //This line persists created object(s).
 #endif
+
+        if (!ObjectSpace.GetObjects<Customer>().Any()) {
+            var acme = ObjectSpace.CreateObject<Customer>();  acme.Name = "Acme Corp";
+            var globex = ObjectSpace.CreateObject<Customer>(); globex.Name = "Globex";
+            var today = DateTime.Today;
+            Seed("ORD-001", today.AddDays(-2),  1250m, acme,   "Recent Acme order — matches last-7-days + Acme*");
+            Seed("ORD-002", today.AddDays(-30),  900m, acme,   "Old Acme order — excluded by date");
+            Seed("ORD-003", today.AddDays(-1),   300m, globex, "Recent Globex order — excluded by name");
+            ObjectSpace.CommitChanges();
+
+            void Seed(string no, DateTime date, decimal amount, Customer c, string desc) {
+                var o = ObjectSpace.CreateObject<Order>();
+                o.Number = no; o.OrderDate = date; o.Amount = amount; o.Customer = c; o.Description = desc;
+            }
+        }
     }
     public override void UpdateDatabaseBeforeUpdateSchema() {
         base.UpdateDatabaseBeforeUpdateSchema();

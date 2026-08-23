@@ -31,8 +31,11 @@ public sealed class XafReportSchedulerModule : ModuleBase {
         DevExpress.ExpressApp.Security.SecurityModule.UsedExportedTypes = DevExpress.Persistent.Base.UsedExportedTypes.Custom;
     }
     public override IEnumerable<ModuleUpdater> GetModuleUpdaters(IObjectSpace objectSpace, Version versionFromDB) {
-        ModuleUpdater updater = new DatabaseUpdate.Updater(objectSpace, versionFromDB);
-        return new ModuleUpdater[] { updater };
+        var storage = DevExpress.ExpressApp.ReportsV2.ReportDataProvider.GetReportStorage(Application.ServiceProvider);
+        return new ModuleUpdater[] {
+            new DatabaseUpdate.Updater(objectSpace, versionFromDB),
+            new DatabaseUpdate.ReportSeeder(objectSpace, versionFromDB, storage),
+        };
     }
     public override void Setup(XafApplication application) {
         base.Setup(application);
