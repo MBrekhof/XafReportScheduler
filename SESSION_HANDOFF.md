@@ -19,6 +19,8 @@ Built across 6 tasks, one commit per task (local only, nothing pushed):
 | `d155742` | Fix round: unregister Hangfire job on schedule delete, log sync-retry exhaustion, guard unhandled `ExportFormat` |
 | `2f083ec` | C# Playwright E2E phase gate (`XafReportScheduler.E2ETests`) |
 | `ec07a4a` | Final-review fix wave (code): cron validation on save, per-row sync isolation, logon inside try, no Hangfire retries, E2E fresh-clone robustness, `Nullable` on Module |
+| `5909563` | Final-review fix wave (docs): E2E prerequisites, credential handling, scheduling ceilings, handoff pointers |
+| `aa288de` | Re-review follow-up: don't validate cron on schedules being deleted (a bad-cron row was undeletable) |
 | *(this commit)* | Final-review fix wave (docs): this file + `README.md` |
 
 ## What was verified
