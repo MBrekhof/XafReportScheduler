@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <Deterministic>false</Deterministic>
+    <AssemblyVersion>1.0.*</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Configurations>Debug;Release;EasyTest</Configurations>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Model.xafml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Model.xafml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Drawing.Skia" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Blazor" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.CodeAnalysis" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.ReportsV2.Blazor" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Validation.Blazor" Version="26.1.*" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.24" />
+    <PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.10.0">
+      <ExcludeAssets>contentFiles</ExcludeAssets>
+    </PackageReference>
+    
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XafReportScheduler.Module\XafReportScheduler.Module.csproj" />
+  </ItemGroup>
+</Project>
