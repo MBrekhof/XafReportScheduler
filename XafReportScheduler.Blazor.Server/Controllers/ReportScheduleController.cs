@@ -53,7 +53,7 @@ public class ReportScheduleController : ObjectViewController<ObjectView, ReportS
     {
         foreach (var s in ObjectSpace.ModifiedObjects.OfType<ReportSchedule>())
         {
-            if (string.IsNullOrWhiteSpace(s.CronExpression)) continue;
+            if (ObjectSpace.IsDeletedObject(s) || string.IsNullOrWhiteSpace(s.CronExpression)) continue;
             try { Cronos.CronExpression.Parse(s.CronExpression); }
             catch (Cronos.CronFormatException ex)
             {
