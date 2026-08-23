@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.EntityFrameworkCore;
 using XafReportScheduler.Blazor.Server.Services;
 using DevExpress.Persistent.BaseImpl.EF.PermissionPolicy;
+using Hangfire;
 
 namespace XafReportScheduler.Blazor.Server;
 
@@ -94,6 +95,11 @@ public class Startup {
         authentication.AddCookie(options => {
             options.LoginPath = "/LoginPage";
         });
+
+        services.AddHangfire(cfg => cfg.UseInMemoryStorage());
+        services.AddHangfireServer();
+        services.AddScoped<XafReportScheduler.Module.Services.ReportJob>();
+        services.AddHostedService<XafReportScheduler.Blazor.Server.Services.ReportScheduleSyncService>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

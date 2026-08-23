@@ -22,13 +22,16 @@ public class XafReportSchedulerBlazorApplication : BlazorApplication {
         base.OnSetupStarted();
 
 #if DEBUG
-        if(System.Diagnostics.Debugger.IsAttached && CheckCompatibilityType == CheckCompatibilityType.DatabaseSchema) {
+        if(CheckCompatibilityType == CheckCompatibilityType.DatabaseSchema) {
             DatabaseUpdateMode = DatabaseUpdateMode.UpdateDatabaseAlways;
         }
 #endif
     }
     void XafReportSchedulerBlazorApplication_DatabaseVersionMismatch(object sender, DatabaseVersionMismatchEventArgs e) {
 #if EASYTEST
+        e.Updater.Update();
+        e.Handled = true;
+#elif DEBUG
         e.Updater.Update();
         e.Handled = true;
 #else
