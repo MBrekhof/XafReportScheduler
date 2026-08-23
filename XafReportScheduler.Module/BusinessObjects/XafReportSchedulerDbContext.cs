@@ -22,6 +22,7 @@ public class XafReportSchedulerEFCoreDbContext : DbContext {
     public DbSet<ReportDataV2> ReportDataV2 { get; set; }
     public DbSet<XafReportScheduler.Module.BusinessObjects.Customer> Customers { get; set; }
     public DbSet<XafReportScheduler.Module.BusinessObjects.Order> Orders { get; set; }
+    public DbSet<XafReportScheduler.Module.BusinessObjects.ReportSchedule> ReportSchedules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) {
         base.OnModelCreating(modelBuilder);
