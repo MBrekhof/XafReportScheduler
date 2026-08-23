@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using DevExpress.ExpressApp.DC;
 using DevExpress.ExpressApp.Editors;
+using DevExpress.ExpressApp.Model;
 using DevExpress.Persistent.Base;
 using DevExpress.Persistent.BaseImpl.EF;
 using DevExpress.Persistent.Validation;
@@ -41,9 +42,14 @@ public class ReportSchedule : BaseObject {
 
     public virtual bool IsEnabled { get; set; } = true;
 
+    [ModelDefault("AllowEdit", "False")]
+    [ModelDefault("DisplayFormat", "{0:yyyy-MM-dd HH:mm:ss} UTC")]
+    [ModelDefault("EditMask", "yyyy-MM-dd HH:mm:ss")]
     public virtual DateTime? LastRunUtc { get; set; }
+    [ModelDefault("AllowEdit", "False")]
     public virtual string? LastRunStatus { get; set; }
-    [FieldSize(FieldSizeAttribute.Unlimited)]
+    [FieldSize(FieldSizeAttribute.Unlimited), ModelDefault("AllowEdit", "False")]
     public virtual string? LastRunMessage { get; set; }
+    [ModelDefault("AllowEdit", "False")]
     public virtual string? LastOutputPath { get; set; }
 }

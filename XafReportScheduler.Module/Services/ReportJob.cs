@@ -5,6 +5,7 @@ using DevExpress.ExpressApp.Security;
 using DevExpress.Persistent.BaseImpl.EF;
 using DevExpress.Xpo;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using XafReportScheduler.Module.BusinessObjects;
 
@@ -15,16 +16,17 @@ public sealed class ReportJob(
     INonSecuredObjectSpaceFactory nonSecuredFactory,
     ISecurityStrategyBase security,
     IConfiguration config,
+    IHostEnvironment env,
     ILogger<ReportJob> log)
 {
     public void Run(Guid scheduleId)
     {
-        Logon();
         using var os = nonSecuredFactory.CreateNonSecuredObjectSpace<ReportSchedule>();
         var schedule = os.GetObjectByKey<ReportSchedule>(scheduleId)
             ?? throw new InvalidOperationException($"ReportSchedule {scheduleId} not found");
         try
         {
+            Logon();
             var path = Export(schedule);
             schedule.LastRunStatus = "Succeeded";
             schedule.LastRunMessage = null;
@@ -36,7 +38,8 @@ public sealed class ReportJob(
             schedule.LastRunStatus = "Failed";
             schedule.LastRunMessage = ex.ToString();
             schedule.LastRunUtc = DateTime.UtcNow;
-            os.CommitChanges();
+            try { os.CommitChanges(); }
+            catch (Exception commitEx) { log.LogError(commitEx, "Report schedule {Name}: failed to persist failure status", schedule.Name); }
             throw;   // Hangfire must see the failure
         }
         schedule.LastRunUtc = DateTime.UtcNow;
@@ -54,6 +57,7 @@ public sealed class ReportJob(
         var folder = string.IsNullOrWhiteSpace(schedule.OutputFolder)
             ? config["ReportJobs:OutputFolder"] ?? "output"
             : schedule.OutputFolder;
+        folder = Path.IsPathRooted(folder) ? folder : Path.Combine(env.ContentRootPath, folder);
         Directory.CreateDirectory(folder);
         var safeName = string.Concat(schedule.Name.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
         var path = Path.Combine(folder, $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.{schedule.Format.ToString().ToLowerInvariant()}");
@@ -71,11 +75,12 @@ public sealed class ReportJob(
     void Logon()
     {
         if (security.IsAuthenticated) return;
+        if (security is not SecurityStrategy concrete)
+            throw new InvalidOperationException($"Unexpected security strategy {security.GetType().Name}");
         var user = config["ReportJobs:UserName"] ?? "Admin";
         var password = config["ReportJobs:Password"] ?? "";
-        if (security is SecurityStrategy concrete)
-            concrete.Authentication.SetLogonParameters(new AuthenticationStandardLogonParameters(user, password));
+        concrete.Authentication.SetLogonParameters(new AuthenticationStandardLogonParameters(user, password));
         using var space = nonSecuredFactory.CreateNonSecuredObjectSpace<ApplicationUser>();
-        ((SecurityStrategyBase)security).Logon(space);
+        concrete.Logon(space);
     }
 }

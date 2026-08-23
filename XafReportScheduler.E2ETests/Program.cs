@@ -23,8 +23,11 @@ const string ConnectionString =
 var repoRoot = FindRepoRoot();
 var blazorProj = Path.Combine(repoRoot, "XafReportScheduler.Blazor.Server");
 var outputDir = Path.Combine(blazorProj, "output");
-var screenshotDir = Path.Combine(repoRoot, "docs", "screenshots");
+// ponytail: write to a scratch dir, not docs/screenshots -- the committed PNGs there are
+// evidence from a real run and shouldn't be silently overwritten by every local E2E pass.
+var screenshotDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
 Directory.CreateDirectory(screenshotDir);
+Console.WriteLine($"Screenshots: {screenshotDir}");
 
 Process? app = null;
 IPage? page = null;
@@ -32,11 +35,16 @@ IPlaywright? playwright = null;
 IBrowser? browser = null;
 var appOutput = new System.Text.StringBuilder();
 var failed = false;
+var missingBrowser = false;
 
 try
 {
     Step("Pre-clean: remove Orders/Customers so the Updater re-seeds fresh relative dates, and old CSVs");
-    Sql("DELETE FROM Orders; DELETE FROM Customers;");
+    try { Sql("DELETE FROM Orders; DELETE FROM Customers;"); }
+    catch (SqlException ex) when (ex.Number is 4060 or 208)
+    {
+        Console.WriteLine("    (no database yet -- skipping pre-clean)");
+    }
     if (Directory.Exists(outputDir))
         foreach (var f in Directory.GetFiles(outputDir, "*.csv")) File.Delete(f);
 
@@ -47,8 +55,18 @@ try
     app = StartApp(blazorProj, appOutput);
     await WaitForHttpOk(appOutput);
 
-    playwright = await Playwright.CreateAsync();
-    browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
+    try
+    {
+        playwright = await Playwright.CreateAsync();
+        browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
+    }
+    catch (Exception ex) when (ex.Message.Contains("Executable doesn't exist", StringComparison.OrdinalIgnoreCase))
+    {
+        missingBrowser = true;
+        Console.WriteLine("\nPlaywright's Chromium browser is not installed. Run:");
+        Console.WriteLine("    pwsh XafReportScheduler.E2ETests/bin/Debug/net8.0/playwright.ps1 install chromium");
+        throw;
+    }
     page = await NewPage(browser);
 
     Step("Log in as Admin");
@@ -153,7 +171,7 @@ finally
     playwright?.Dispose();
     KillApp(ref app);
 }
-return failed ? 1 : 0;
+return missingBrowser ? 2 : (failed ? 1 : 0);
 
 // ---------- helpers ----------
 

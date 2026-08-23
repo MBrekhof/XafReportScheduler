@@ -19,7 +19,11 @@ public sealed class ReportScheduleSyncService(IServiceProvider sp, ILogger<Repor
                 var factory = scope.ServiceProvider.GetRequiredService<INonSecuredObjectSpaceFactory>();
                 using var os = factory.CreateNonSecuredObjectSpace<ReportSchedule>();
                 var all = os.GetObjects<ReportSchedule>().ToList();
-                foreach (var s in all) ReportScheduleJobs.Register(s);
+                foreach (var s in all)
+                {
+                    try { ReportScheduleJobs.Register(s); }
+                    catch (Exception ex) { log.LogError(ex, "Schedule {Name}: registration failed (bad cron?), skipped", s.Name); }
+                }
                 log.LogInformation("Registered {Count} report schedules", all.Count(s => s.IsEnabled));
                 return;
             }

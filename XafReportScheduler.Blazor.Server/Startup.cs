@@ -96,7 +96,8 @@ public class Startup {
             options.LoginPath = "/LoginPage";
         });
 
-        services.AddHangfire(cfg => cfg.UseInMemoryStorage());
+        // ponytail: failures are visible on the schedule row; retries would rewrite LastRun* up to 10x
+        services.AddHangfire(cfg => cfg.UseInMemoryStorage().UseFilter(new AutomaticRetryAttribute { Attempts = 0 }));
         services.AddHangfireServer();
         services.AddScoped<XafReportScheduler.Module.Services.ReportJob>();
         services.AddHostedService<XafReportScheduler.Blazor.Server.Services.ReportScheduleSyncService>();

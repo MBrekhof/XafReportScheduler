@@ -1,6 +1,8 @@
+using System.ComponentModel;
 using DevExpress.ExpressApp;
 using DevExpress.ExpressApp.Actions;
 using DevExpress.Persistent.Base;
+using Microsoft.Extensions.Logging;
 using XafReportScheduler.Blazor.Server.Services;
 using XafReportScheduler.Module.BusinessObjects;
 
@@ -30,11 +32,13 @@ public class ReportScheduleController : ObjectViewController<ObjectView, ReportS
     {
         base.OnActivated();
         ObjectSpace.ObjectDeleted += ObjectSpace_ObjectDeleted;
+        ObjectSpace.Committing += ObjectSpace_Committing;
         ObjectSpace.Committed += ObjectSpace_Committed;
     }
     protected override void OnDeactivated()
     {
         ObjectSpace.Committed -= ObjectSpace_Committed;
+        ObjectSpace.Committing -= ObjectSpace_Committing;
         ObjectSpace.ObjectDeleted -= ObjectSpace_ObjectDeleted;
         base.OnDeactivated();
     }
@@ -43,11 +47,28 @@ public class ReportScheduleController : ObjectViewController<ObjectView, ReportS
         foreach (var obj in e.Objects)
             if (obj is ReportSchedule s) deletedIds.Add(s.ID);
     }
+    // Reject an unparsable cron string at save time rather than letting it silently fail
+    // registration later (see ReportScheduleSyncService / ReportScheduleJobs.Register).
+    void ObjectSpace_Committing(object? sender, CancelEventArgs e)
+    {
+        foreach (var s in ObjectSpace.ModifiedObjects.OfType<ReportSchedule>())
+        {
+            if (string.IsNullOrWhiteSpace(s.CronExpression)) continue;
+            try { Cronos.CronExpression.Parse(s.CronExpression); }
+            catch (Cronos.CronFormatException ex)
+            {
+                throw new UserFriendlyException($"Invalid cron expression '{s.CronExpression}': {ex.Message}");
+            }
+        }
+    }
     void ObjectSpace_Committed(object? sender, EventArgs e)
     {
         foreach (var id in deletedIds) ReportScheduleJobs.Remove(id);
         deletedIds.Clear();
         if (ViewCurrentObject is { } s && !ObjectSpace.IsDeletedObject(s))
-            ReportScheduleJobs.Register(s);   // re-sync cron/enabled on every save
+        {
+            try { ReportScheduleJobs.Register(s); }
+            catch (Exception ex) { ReportScheduleJobs.Logger?.LogError(ex, "Schedule {Name}: registration failed (bad cron?), skipped", s.Name); }
+        }
     }
 }
