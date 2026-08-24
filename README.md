@@ -6,6 +6,9 @@ one question — can an XAF app seed a report that end users can still redesign,
 a saved filter to it via the standard criteria editor, and run it unattended on a cron
 schedule (or on demand), exporting to a folder?
 
+For the design rationale explained developer-to-developer, see
+[docs/how-it-works.md](docs/how-it-works.md).
+
 ## What it is
 
 **1. An editable seeded report.** `OrdersReport` is a code-built `XtraReport` over the
