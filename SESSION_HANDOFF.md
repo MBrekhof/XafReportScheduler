@@ -1,4 +1,4 @@
-# Session Handoff — 2026-08-23
+# Session Handoff — 2026-08-24
 
 ## What was built
 
@@ -62,9 +62,10 @@ machine (git-ignored). A final-review fix wave's report is at
 ## Open points
 
 1. **Pushed — repo is live and private.** `github.com/MBrekhof/XafReportScheduler`
-   (private, owner account `MBrekhof`); `master` is in sync with `origin/master` at
-   `c84bcdd`. Pushing to it needs no further go. **Making it public still does** — see
-   points 2 and 3.
+   (private, owner account `MBrekhof`); `master` is pushed and routinely kept in sync.
+   Pushing to it needs no further go. **Making it public still does** — see points 2
+   and 3. Since 2026-08-24 the design rationale lives in `docs/how-it-works.md`
+   (linked from the README intro).
 2. **`UrlSigningKey` is the scaffold's debug key and is committed** — untidy, but not a
    live secret here. It's the HMAC key XAF uses to sign `IFileService` URLs (images,
    file attachments) so they can't be forged or tampered with; omitted, XAF generates a
