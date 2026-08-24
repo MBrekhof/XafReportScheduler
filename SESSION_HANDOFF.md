@@ -65,11 +65,18 @@ machine (git-ignored). A final-review fix wave's report is at
    (private, owner account `MBrekhof`); `master` is in sync with `origin/master` at
    `c84bcdd`. Pushing to it needs no further go. **Making it public still does** — see
    points 2 and 3.
-2. **`UrlSigningKey` is the scaffold's debug key and is committed.** It sits in
-   `XafReportScheduler.Blazor.Server/appsettings.json` (tracked, so it is in git history
-   too). Regenerating it before flipping the repo public is therefore *not* enough — the
-   old value stays in history. Either accept that (it's a local-POC debug key that was
-   never deployed) or scrub history at the same time.
+2. **`UrlSigningKey` is the scaffold's debug key and is committed** — untidy, but not a
+   live secret here. It's the HMAC key XAF uses to sign `IFileService` URLs (images,
+   file attachments) so they can't be forged or tampered with; omitted, XAF generates a
+   random in-memory key instead (docs:
+   [eXpressAppFramework/404691](https://docs.devexpress.com/eXpressAppFramework/404691)).
+   This POC has **no `IFileService`/`FileAttachment`/`FileData` usage at all** — reports
+   export to a folder on disk — so the key currently signs nothing.
+
+   It lives in `XafReportScheduler.Blazor.Server/appsettings.json`, which is tracked, so
+   the value is in git history: regenerating it before flipping the repo public would
+   not remove it. Given it guards nothing in this app, "leave it" is defensible; the
+   tidy option is to drop the setting entirely (XAF then auto-generates one per run).
 3. **DevExpress ticket outcome pending** — a support ticket about the "XafReportScheduler"
    name and publishing terms is open with DevExpress; the owner has a draft in their
    own scratchpad. This is the live gate on going public: repo visibility/naming may
