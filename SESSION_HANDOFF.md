@@ -61,15 +61,19 @@ machine (git-ignored). A final-review fix wave's report is at
 
 ## Open points
 
-1. **Push / GitHub repo creation is pending owner go.** Nothing has been pushed; the
-   repo is local-only (`git init`, no remote configured). Per the plan's Global
-   Constraints, this stays that way until the owner explicitly says go.
-2. **Before any public push: regenerate `UrlSigningKey` in `appsettings.json`.** It's
-   still the scaffold's debug key (`XafReportScheduler.Blazor.Server/appsettings.json`),
-   fine for a local POC but not something to publish as-is.
+1. **Pushed — repo is live and private.** `github.com/MBrekhof/XafReportScheduler`
+   (private, owner account `MBrekhof`); `master` is in sync with `origin/master` at
+   `c84bcdd`. Pushing to it needs no further go. **Making it public still does** — see
+   points 2 and 3.
+2. **`UrlSigningKey` is the scaffold's debug key and is committed.** It sits in
+   `XafReportScheduler.Blazor.Server/appsettings.json` (tracked, so it is in git history
+   too). Regenerating it before flipping the repo public is therefore *not* enough — the
+   old value stays in history. Either accept that (it's a local-POC debug key that was
+   never deployed) or scrub history at the same time.
 3. **DevExpress ticket outcome pending** — a support ticket about the "XafReportScheduler"
    name and publishing terms is open with DevExpress; the owner has a draft in their
-   own scratchpad. Repo visibility/naming may need to change depending on the answer.
+   own scratchpad. This is the live gate on going public: repo visibility/naming may
+   need to change depending on the answer.
 4. **Possible next steps** (none started, no work done toward these):
    - SMTP delivery sink alongside the folder sink.
    - A run-history entity (currently only the last run's status/message/path are kept

@@ -54,5 +54,9 @@ No `TODO.md` — this repo is not wired to ContextBoard yet. Open items live in
 
 ## Repo state
 
-Private, local-only. **Never push or create the GitHub repo without an explicit go from
-the owner** — see `SESSION_HANDOFF.md` for the pending items that gate that.
+**Private** on GitHub: `github.com/MBrekhof/XafReportScheduler`, owner account `MBrekhof`
+(`gh auth switch -u MBrekhof` if a push 404s). Pushing to `master` is fine.
+
+**Never make the repo public without an explicit go from the owner** — a DevExpress
+support ticket about the name and publishing terms is still open, and the committed
+`UrlSigningKey` is in git history. See `SESSION_HANDOFF.md` "Open points".
