@@ -85,10 +85,24 @@ machine (git-ignored). A final-review fix wave's report is at
    name and publishing terms is open with DevExpress; the owner has a draft in their
    own scratchpad. This is the live gate on going public: repo visibility/naming may
    need to change depending on the answer.
-4. **Possible next steps** (none started, no work done toward these):
-   - SMTP delivery sink alongside the folder sink.
-   - A run-history entity (currently only the last run's status/message/path are kept
-     on `ReportSchedule` itself).
+4. **Integration target is WLNCentral (decided 2026-08-26).** WLNCentral already ships
+   the scheduling/delivery half: `ScheduledReport` (report → `ReportDataV2`, cron,
+   `CriteriaString`, `EmailRecipients`, per-row Hangfire id) + `GenerateReportHandler`
+   (export via `IReportExportService`, mails per recipient via MailKit `IEmailService`),
+   `JobExecutionRecord` run history written by `JobExecutor`, Hangfire on SQL Server with
+   a `HangfireJob` service user. So **SMTP delivery and a run-history entity are NOT
+   built here** — they'd be thrown away on integration. What this POC contributes to
+   WLNCentral is the other half:
+   - **Editable seeded reports** — WLNCentral registers reports through
+     `WLNCentralReportsUpdater : PredefinedReportsUpdater` (locked). Port `ReportSeeder`'s
+     `IReportStorage.SaveReport` approach for reports that must stay user-editable.
+   - **Criteria editor UX** — `ScheduledReport.CriteriaString` is a raw string there;
+     this POC's `[CriteriaOptions]` popup editor bound to the report's data type is a
+     drop-in improvement.
+   - Only gap on the WLNCentral side: `JobExecutionRecord` has no output-path field
+     (bytes are emailed, not kept). If folder retention is wanted, that's one column,
+     not a new entity.
+5. **Possible next steps for this POC** (none started):
    - Persistent Hangfire storage (SQL Server or PostgreSQL) instead of in-memory, so
      scheduled runs survive a restart / missed runs can be replayed.
    - PostgreSQL as an alternative to LocalDB.
