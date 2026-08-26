@@ -4,7 +4,7 @@ Instructions for working in this repo. See `README.md` for what the app does and
 
 ## Project overview
 
-DevExpress XAF 26.1.4 Blazor Server POC (.NET 8, EF Core, SQL Server LocalDB) that
+DevExpress XAF 26.1.4 Blazor Server POC (.NET 10, EF Core 10, SQL Server LocalDB) that
 seeds a user-editable report, lets an admin attach filter criteria to it via XAF's
 criteria editor, and runs it on a Hangfire cron schedule or on demand ("Run Now"),
 exporting to a folder.

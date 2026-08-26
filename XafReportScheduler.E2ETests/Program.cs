@@ -64,7 +64,7 @@ try
     {
         missingBrowser = true;
         Console.WriteLine("\nPlaywright's Chromium browser is not installed. Run:");
-        Console.WriteLine("    pwsh XafReportScheduler.E2ETests/bin/Debug/net8.0/playwright.ps1 install chromium");
+        Console.WriteLine("    pwsh XafReportScheduler.E2ETests/bin/Debug/net10.0/playwright.ps1 install chromium");
         throw;
     }
     page = await NewPage(browser);

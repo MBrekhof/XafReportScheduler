@@ -76,7 +76,7 @@ seconds after startup, retrying while the database comes up). This means:
 
 ## Run
 
-Prerequisites: .NET 8 SDK, SQL Server LocalDB (`(localdb)\mssqllocaldb`), a DevExpress
+Prerequisites: .NET 10 SDK, SQL Server LocalDB (`(localdb)\mssqllocaldb`), a DevExpress
 26.1.4 license/NuGet feed available to `dotnet restore`.
 
 ```bash
@@ -108,7 +108,7 @@ it per-row via its own `OutputFolder` field.
 Once, after the first build, install the Playwright browser:
 
 ```bash
-pwsh XafReportScheduler.E2ETests/bin/Debug/net8.0/playwright.ps1 install chromium
+pwsh XafReportScheduler.E2ETests/bin/Debug/net10.0/playwright.ps1 install chromium
 ```
 
 Then:
@@ -131,7 +131,7 @@ a database you care about the contents of. Assertions:
 - the enabled recurring job was registered at startup (`Registered 1 report schedules`
   in app stdout).
 
-Screenshots from a passing run land in `XafReportScheduler.E2ETests/bin/Debug/net8.0/screenshots/`
+Screenshots from a passing run land in `XafReportScheduler.E2ETests/bin/Debug/net10.0/screenshots/`
 (git-ignored, printed at the start of the run) — separate from the committed evidence
 screenshots checked into `docs/screenshots/`, which each E2E run no longer overwrites. Exit
 code `0` on full pass, `1` on a failed assertion, `2` if the Playwright browser isn't installed

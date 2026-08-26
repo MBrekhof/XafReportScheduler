@@ -1,8 +1,8 @@
-# Session Handoff — 2026-08-24
+# Session Handoff — 2026-08-26
 
 ## What was built
 
-A DevExpress XAF 26.1.4 Blazor Server POC (.NET 8, EF Core, LocalDB) proving three
+A DevExpress XAF 26.1.4 Blazor Server POC (.NET 10, EF Core 10, LocalDB) proving three
 things work together in one app: an editable seeded report, admin-attachable filter
 criteria via XAF's native criteria editor, and Hangfire cron scheduling with an
 on-demand "Run Now". See `README.md` for the full description and `CLAUDE.md` for
@@ -66,6 +66,9 @@ machine (git-ignored). A final-review fix wave's report is at
    Pushing to it needs no further go. **Making it public still does** — see points 2
    and 3. Since 2026-08-24 the design rationale lives in `docs/how-it-works.md`
    (linked from the README intro).
+   2026-08-26: retargeted to `net10.0` / EF Core 10.0.11 (was net8.0 / 8.0.28; EF Core
+   Design 10 forced `Microsoft.CodeAnalysis.*` 4.10.0 → 5.0.0 and `Microsoft.Data.SqlClient`
+   → 6.1.6); no code changes were needed, E2E gate green on the first run.
 2. **`UrlSigningKey` is the scaffold's debug key and is committed** — untidy, but not a
    live secret here. It's the HMAC key XAF uses to sign `IFileService` URLs (images,
    file attachments) so they can't be forged or tampered with; omitted, XAF generates a
@@ -92,10 +95,6 @@ machine (git-ignored). A final-review fix wave's report is at
    - Tree-friendly criteria examples/docs — the current seeded criteria string renders
      fine in Advanced/text mode but the visual criteria-tree editor can't build a tree
      for it (`LocalDateTimeLastWeek()`).
-   - Retarget `net10.0` — the plan's Tech Stack line named .NET 10, but the `dotnet new
-     dx.xaf` template's current default is `net8.0` and that's what's actually in every
-     `.csproj` in this repo (flagged, not changed, in Task 1 — see its report for the
-     reasoning). Revisit if .NET 10 is load-bearing for this POC.
 
 ## Known nits (deferred, non-blocking)
 
